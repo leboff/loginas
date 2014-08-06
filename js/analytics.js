@@ -10,4 +10,4 @@ _gaq.push(['_trackPageview']);
 
 function trackLogin(e) {
     _gaq.push(['_trackEvent', e.target.className, 'clicked']);
- };
+};

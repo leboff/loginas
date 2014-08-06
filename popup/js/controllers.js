@@ -12,7 +12,6 @@ angular.module('loginas.controllers', [])
 	$scope.loginAs = function(loginUser, e){
   		bg.loginAs(loginUser);
   		trackLogin(e);
-  		window.close();
   	}
 
 
