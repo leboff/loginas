@@ -1,0 +1,34 @@
+<div ng-controller="UserListController">
+	<input ng-show="loaded" type="search" class="form-control" ng-model="q" placeholder="filter users..." />
+	<table ng-show="loaded" class="table table-condensed table-striped">
+		<thead>
+			<th>
+				Login
+			</th>
+			<th>
+				Name
+			</th>
+			<th>
+				Profile
+			</th>
+			<th>
+				Role
+			</th>
+		</thead>
+		<tbody>
+			<tr ng-repeat="user in users | filter:q">
+				<td>
+					<a href="#_" ng-click="loginAs(user.Id)">
+						Login
+					</a>
+				</td>
+				<td>{{user.FirstName + ' ' + user.LastName}}</td>
+				<td>{{user.Profile.Name}}</td>
+				<td>{{user.UserRole.Name}}</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="loading" ng-show="!loaded">
+		<image src="img/spiffygif_64x64.gif" />
+	</div>
+</div>
