@@ -9,8 +9,9 @@ angular.module('loginas.controllers', [])
   	$scope.loaded = false;
   	$scope.url = bg.getUrl();
 
-	$scope.loginAs = function(loginUser){
+	$scope.loginAs = function(loginUser, e){
   		bg.loginAs(loginUser);
+  		trackLogin(e);
   		window.close();
   	}
 

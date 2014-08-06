@@ -1,5 +1,5 @@
 {
-  "name": "Loginas",
+  "name": "Loginas Beta",
   "version": "0.0.1",
   "manifest_version": 2,
   "description": "Allow you to log in as any user in your salesforce org, and is searchable",
@@ -10,18 +10,19 @@
     "128": "icons/icon128.png"
   },
   "page_action": {
-    "default_icon": {                    // optional
-      "19": "icons/icon19.png",          // optional
-      "38": "icons/icon38.png"            // optional
+    "default_icon": {
+      "19": "icons/icon19.png",
+      "38": "icons/icon38.png"
     },
-    "default_title": "Loginas",    // optional; shown in tooltip
-    "default_popup": "popup/index.html"        // optional
+    "default_title": "Loginas - Beta",
+    "default_popup": "popup/index.html"
    },
   "default_locale": "en",
   "background": {
     "page": "bg/background.html",
     "persistent": true
   },
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "permissions": [
     "https://*.salesforce.com/*",
     "cookies",

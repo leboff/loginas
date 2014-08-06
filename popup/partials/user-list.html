@@ -18,7 +18,7 @@
 		<tbody>
 			<tr ng-repeat="user in users | filter:q">
 				<td>
-					<a href="#_" ng-click="loginAs(user.Id)">
+					<a class="login" href="#_" ng-click="loginAs(user.Id, $event)">
 						Login
 					</a>
 				</td>
