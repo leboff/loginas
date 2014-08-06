@@ -1,10 +1,3 @@
-// if you checked "fancy-settings" in extensionizr.com, uncomment this lines
-
-// var settings = new Store("settings", {
-//     "sample_setting": "This is how you use Store.js to remember values"
-// });
-
-
 //example of using a message handler from the inject scripts
 chrome.extension.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -40,7 +33,7 @@ var client = new forcetk.Client();
 
 function getSessionId(url){
 	chrome.cookies.get({url: url, name: "sid"}, function(cookie){
-		if(sid != cookie.value){
+		if(cookie && sid != cookie.value){
 			sid = cookie.value;
 			client.setSessionToken(sid, null, getInstanceUrl(url));
 		}
