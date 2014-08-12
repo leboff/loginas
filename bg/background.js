@@ -60,6 +60,22 @@ function loginAs(userId){
 	});
 }
 
+function debugLog(userId, callback){
+	chrome.tabs.create(
+			{
+				url: getInstanceUrl(url) + '/setup/ui/listApexTraces.apexp?user_id='+userId+'&user_logging=true',
+				active: false,
+				selected: false
+			}, 
+			function(tab){
+				chrome.tabs.remove(tab.id);
+				if(callback){
+					callback(userId, tab);
+				}
+			}
+		)
+}
+
 function getUrl(){
 	return getInstanceUrl(url);
 }
@@ -85,7 +101,7 @@ function getUsers(callback){
 	chrome.cookies.get({url: getInstanceUrl(url), name: "oid"}, function(cookie){
 		if((cookie.value && oid !== cookie.value) || !users){
 			oid = cookie.value;
-			client.query("select id, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
+			client.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
 				users = response.records;
 				callback(users);
 			});

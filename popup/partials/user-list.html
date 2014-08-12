@@ -20,6 +20,12 @@
 				<td>
 					<a class="login" href="#_" ng-click="loginAs(user.Id, $event)">
 						Login
+					</a> | 
+					<a class="debug" href="#_" ng-click="debugLog(user.Id, $event)">
+						Debug
+					</a> |  
+					<a class="both" href="#_" ng-click="debugLogin(user.Id, $event)">
+						Both
 					</a>
 				</td>
 				<td>{{user.FirstName + ' ' + user.LastName}}</td>

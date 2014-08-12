@@ -29,5 +29,11 @@ angular.module('loginas.services', []).
     this.loginAs = function(userId){
       bp.loginAs(userId);
     }
+    this.debugLog = function(userId){
+      bp.debugLog(userId);
+    }
+    this.debugLogin = function(userId){
+      bp.debugLog(userId, this.loginAs);
+    }
   }]).
-  value('version', '0.1');
+  value('version', '0.0.4');
