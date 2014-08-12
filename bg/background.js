@@ -68,12 +68,16 @@ function debugLog(userId, callback){
 				selected: false
 			}, 
 			function(tab){
-				chrome.tabs.remove(tab.id);
-				if(callback){
-					callback(userId, tab);
-				}
+				chrome.tabs.onUpdated.addListener(function(tabid, changeInfo, tab2){
+					if(tabid == tab.id){
+						chrome.tabs.remove(tab.id);
+						if(callback){
+							callback(userId, tab);
+						}
+					}
+				});
 			}
-		)
+		);
 }
 
 function getUrl(){

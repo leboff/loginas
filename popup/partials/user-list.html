@@ -6,6 +6,12 @@
 				Login
 			</th>
 			<th>
+				Debug
+			</th>
+			<th>
+				Both
+			</th>
+			<th>
 				Name
 			</th>
 			<th>
@@ -20,10 +26,14 @@
 				<td>
 					<a class="login" href="#_" ng-click="loginAs(user.Id, $event)">
 						Login
-					</a> | 
+					</a>
+				</td>
+				<td>
 					<a class="debug" href="#_" ng-click="debugLog(user.Id, $event)">
 						Debug
-					</a> |  
+					</a>
+				</td>
+				<td>
 					<a class="both" href="#_" ng-click="debugLogin(user.Id, $event)">
 						Both
 					</a>
