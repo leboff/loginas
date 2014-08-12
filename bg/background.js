@@ -43,7 +43,7 @@ var url, sid, users, tabid, oid;
 var client = new forcetk.Client();
 
 function getSessionId(url){
-	chrome.cookies.get({url: url, name: "sid"}, function(cookie){
+	chrome.cookies.get({url: getInstanceUrl(url), name: "sid"}, function(cookie){
 		if(cookie && sid != cookie.value){
 			sid = cookie.value;
 			client.setSessionToken(sid, null, getInstanceUrl(url));
@@ -66,7 +66,13 @@ function getUrl(){
 
 function getInstanceUrl(url){
 	var spl = url.split('/');
-	return spl[0] + '//' + spl[2];
+	if(spl[2].indexOf('.salesforce.com')!=-1){
+		return spl[0] + '//' + spl[2];
+	}
+	if(spl[2].indexOf('.force.com') != -1){
+		var spl2 = spl[2].split('.');
+		return spl[0] + '//' + spl2[1] +'.salesforce.com';
+	}
 }
 
 function shout(){
@@ -76,7 +82,7 @@ function shout(){
 
 function getUsers(callback){
 	/* first check that oid hasn't changed */
-	chrome.cookies.get({url: url, name: "oid"}, function(cookie){
+	chrome.cookies.get({url: getInstanceUrl(url), name: "oid"}, function(cookie){
 		if((cookie.value && oid !== cookie.value) || !users){
 			oid = cookie.value;
 			client.query("select id, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
