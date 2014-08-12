@@ -7,7 +7,7 @@ chrome.extension.onMessage.addListener(
 
 // Define behavior when browser action icon is clicked
 function showPageAction( tabId, changeInfo, tab ) {
-	if(tab.url.indexOf('force.com') != -1){
+	if(isSFDCUrl(tab.url)){
 		tabid = tabid;
 	    chrome.pageAction.show(tabId);
 	    url = tab.url;
@@ -17,11 +17,22 @@ function showPageAction( tabId, changeInfo, tab ) {
 
 function checkUrl(activeInfo){
 	chrome.tabs.get(activeInfo.tabId, function(tab){
-		if(tab.url && tab.url.indexOf('force.com') != -1){
+		if(tab.url && isSFDCUrl(tab.url)){
 			url = tab.url;
 			getSessionId(tab.url);
 		}
 	});
+}
+
+function isSFDCUrl(url){
+	if(url.indexOf('.force.com') != -1){
+		return true;
+	}
+	if(url.indexOf('.salesforce.com') != -1){
+		return true;
+	}
+
+	return false;
 }
 // Call the above function when the url of a tab changes.
 chrome.tabs.onUpdated.addListener(showPageAction);
