@@ -1,6 +1,6 @@
 {
   "name": "Loginas Beta",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "manifest_version": 2,
   "description": "Facilitates SFDC 'Login as' functionality with searchable UI",
   "homepage_url": "http://www.bryanleboff.com",
@@ -25,6 +25,7 @@
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "permissions": [
     "https://*.salesforce.com/*",
+    "https://*.force.com/*",
     "cookies",
     "tabs"
   ]
