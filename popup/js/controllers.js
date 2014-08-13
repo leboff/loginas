@@ -12,15 +12,18 @@ angular.module('loginas.controllers', [])
 	  $scope.loginAs = function(loginUser, e){
   		bg.loginAs(loginUser);
   		trackLogin(e);
+      window.close();
   	}
 
     $scope.debugLog = function(loginUser, e){
       bg.debugLog(loginUser);
       trackLogin(e);
+      window.close();
     }
     $scope.debugLogin = function(loginUser, e){
       bg.debugLogin(loginUser);
       trackLogin(e);
+      window.close();
     }
 
   	var setUsers = function(userData){
