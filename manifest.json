@@ -1,6 +1,6 @@
 {
   "name": "Loginas Beta",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "manifest_version": 2,
   "description": "Facilitates SFDC 'Login as' functionality with searchable UI",
   "homepage_url": "http://www.bryanleboff.com",
