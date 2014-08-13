@@ -24,17 +24,17 @@
 		<tbody>
 			<tr ng-repeat="user in users | filter:q">
 				<td>
-					<a class="login" href="#_" ng-click="loginAs(user.Id, $event)">
+					<a class="login" href="" ng-click="loginAs(user.Id, $event)">
 						Login
 					</a>
 				</td>
 				<td>
-					<a class="debug" href="#_" ng-click="debugLog(user.Id, $event)">
+					<a class="debug" href="" ng-click="debugLog(user.Id, $event)">
 						Debug
 					</a>
 				</td>
 				<td>
-					<a class="both" href="#_" ng-click="debugLogin(user.Id, $event)">
+					<a class="both" href="" ng-click="debugLogin(user.Id, $event)">
 						Both
 					</a>
 				</td>
