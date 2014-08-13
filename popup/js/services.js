@@ -11,15 +11,8 @@ angular.module('loginas.services', []).
 
 
   	this.getUsers = function(){
-      var deferred = $q.defer();
-
-      bp.getUsers(function(data){
-        deferred.resolve(data);
-      });
-
-      return deferred.promise;
+      return $q.when(bp.getUsers());
   	}
-
     this.getUrl = function(){
       return bp.getUrl();
     }
@@ -33,7 +26,7 @@ angular.module('loginas.services', []).
       bp.debugLog(userId);
     }
     this.debugLogin = function(userId){
-      bp.debugLog(userId, this.loginAs);
+      $.when(bp.debugLog(userId)).then(bp.loginAs);
     }
   }]).
   value('version', '0.0.4');

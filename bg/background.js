@@ -7,13 +7,18 @@ chrome.extension.onMessage.addListener(
 
 // Define behavior when browser action icon is clicked
 function showPageAction( tabId, changeInfo, tab ) {
-	if(isSFDCUrl(tab.url)){
-		tabid = tabid;
+	if(isSFDCUrl(tab.url) && changeInfo.status === 'complete'){
 	    chrome.pageAction.show(tabId);
+	}
+};
+
+function setTabInfo(tabId, changeInfo, tab){
+	if(isSFDCUrl(tab.url) && changeInfo.status === 'complete'){
+	    tabid = tabid;
 	    url = tab.url;
 	    getSessionId(tab.url);
 	}
-};
+}
 
 function checkUrl(activeInfo){
 	chrome.tabs.get(activeInfo.tabId, function(tab){
@@ -36,10 +41,17 @@ function isSFDCUrl(url){
 }
 // Call the above function when the url of a tab changes.
 chrome.tabs.onUpdated.addListener(showPageAction);
+chrome.tabs.onUpdated.addListener(setTabInfo);
+
 
 chrome.tabs.onActivated.addListener(checkUrl);
 
+//id stuff
 var url, sid, users, tabid, oid;
+
+//deferreds
+var userDeferred, debugDeferred;
+
 var client = new forcetk.Client();
 
 function getSessionId(url){
@@ -60,24 +72,21 @@ function loginAs(userId){
 	});
 }
 
-function debugLog(userId, callback){
-	chrome.tabs.create(
-			{
-				url: getInstanceUrl(url) + '/setup/ui/listApexTraces.apexp?user_id='+userId+'&user_logging=true',
-				active: false,
-				selected: false
-			}, 
-			function(tab){
-				chrome.tabs.onUpdated.addListener(function(tabid, changeInfo, tab2){
-					if(tabid == tab.id){
-						chrome.tabs.remove(tab.id);
-						if(callback){
-							callback(userId, tab);
-						}
-					}
-				});
+function debugLog(userId){
+	debugDeferred = new jQuery.Deferred();
+	
+	var settings = {url: getInstanceUrl(url) + '/setup/ui/listApexTraces.apexp?user_id='+userId+'&user_logging=true',active: false,selected: false}
+	
+	chrome.tabs.create(settings, function(newTab){
+		chrome.tabs.onUpdated.addListener(function(newTabId, changeInfo){
+			if(newTab.id === newTabId &&  changeInfo.status === 'complete'){
+				chrome.tabs.remove(newTab.id);
+				debugDeferred.resolve(userId);
 			}
-		);
+		});
+	});
+	
+	return debugDeferred;
 }
 
 function getUrl(){
@@ -100,21 +109,22 @@ function shout(){
 	console.log('shout!', d.toTimeString());
 }
 
-function getUsers(callback){
+function getUsers(){
 	/* first check that oid hasn't changed */
+	userDeferred = new jQuery.Deferred();
 	chrome.cookies.get({url: getInstanceUrl(url), name: "oid"}, function(cookie){
 		if((cookie.value && oid !== cookie.value) || !users){
 			oid = cookie.value;
 			client.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
 				users = response.records;
-				callback(users);
+				userDeferred.resolve(users);
 			});
 		}
 		else{
-			callback(users);
+			userDeferred.resolve(users);
 		}
 	});
-	
+	return userDeferred;
 }
 
 
