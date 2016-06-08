@@ -2,7 +2,7 @@
   "name": "Loginas Beta",
   "version": "0.0.5",
   "manifest_version": 2,
-  "description": "Facilitates SFDC 'Login as' functionality with searchable UI",
+  "description": "This extension allows you to set debug logs and log in as various users in your salesforce organization",
   "homepage_url": "http://www.bryanleboff.com",
   "icons": {
     "16": "icons/icon16.png",
@@ -14,7 +14,7 @@
       "19": "icons/icon19.png",
       "38": "icons/icon38.png"
     },
-    "default_title": "Loginas - Beta",
+    "default_title": "Loginas",
     "default_popup": "popup/index.html"
    },
   "default_locale": "en",
