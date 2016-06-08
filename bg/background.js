@@ -1,5 +1,5 @@
 //setup a new forcetk client
-var client = new forcetk.Client();
+var conn;
 
 var instanceUrl; //used to store the instance url
 var orgId; //used to store the orgId
@@ -27,13 +27,9 @@ function getSessionId(instanceUrl) {
 function getOrgId(){
   var deferred = new $.Deferred();
   console.log('getting org ID!')
-  client.query("select id, instancename from organization limit 1", function(results) {
-    if(results.records){
-      deferred.resolve(results.records[0].Id);
-    }
-    else{
-      deferred.reject();
-    }
+  conn.query("select id, instancename from organization limit 1", function(err, results) {
+    if(err) return deferred.reject(err);
+    deferred.resolve(results.records[0].Id);
   });
   return deferred;
 }
@@ -46,9 +42,11 @@ function getUsers(){
     deferred.resolve(users);
   } 
   else{
-    client.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
-      console.log('retrieved', response);
-      users = response.records;
+    conn.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(err, results){
+      console.log('retrieved', results);
+      if(err) return deferred.reject(err);
+
+      users = results.records;
       deferred.resolve(users);
     });
   }
@@ -98,7 +96,10 @@ function setup(tab) {
             sid = newSid;
             users = null;
             console.log('setting session!!')
-            client.setSessionToken(sid, 'v36.0', instanceUrl);
+            conn = new jsforce.Connection({
+              serverUrl : instanceUrl,
+              sessionId : sid
+            });
             getOrgId().then(function(newOrgId){
               console.log('setting org id!')
               orgId = newOrgId;
