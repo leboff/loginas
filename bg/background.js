@@ -1,132 +1,141 @@
-//example of using a message handler from the inject scripts
-chrome.extension.onMessage.addListener(
-  function(request, sender, sendResponse) {
-  	chrome.pageAction.show(sender.tab.id);
-    sendResponse();
-  });
-
-// Define behavior when browser action icon is clicked
-function showPageAction( tabId, changeInfo, tab ) {
-	if(isSFDCUrl(tab.url) && changeInfo.status === 'complete'){
-	    chrome.pageAction.show(tabId);
-	}
-};
-
-function setTabInfo(tabId, changeInfo, tab){
-	if(isSFDCUrl(tab.url) && changeInfo.status === 'complete'){
-	    tabid = tabid;
-	    url = tab.url;
-	    getSessionId(tab.url);
-	}
-}
-
-function checkUrl(activeInfo){
-	chrome.tabs.get(activeInfo.tabId, function(tab){
-		if(tab.url && isSFDCUrl(tab.url)){
-			url = tab.url;
-			getSessionId(tab.url);
-		}
-	});
-}
-
-function isSFDCUrl(url){
-	if(url.indexOf('.force.com') != -1){
-		return true;
-	}
-	if(url.indexOf('.salesforce.com') != -1){
-		return true;
-	}
-
-	return false;
-}
-// Call the above function when the url of a tab changes.
-chrome.tabs.onUpdated.addListener(showPageAction);
-chrome.tabs.onUpdated.addListener(setTabInfo);
-
-
-chrome.tabs.onActivated.addListener(checkUrl);
-
-//id stuff
-var url, sid, users, tabid, oid;
-
-//deferreds
-var userDeferred, debugDeferred;
-
+//setup a new forcetk client
 var client = new forcetk.Client();
 
-function getSessionId(url){
-	chrome.cookies.get({url: getInstanceUrl(url), name: "sid"}, function(cookie){
-		if(cookie && sid != cookie.value){
-			sid = cookie.value;
-			client.setSessionToken(sid, null, getInstanceUrl(url));
-		}
-	})
+var instanceUrl; //used to store the instance url
+var orgId; //used to store the orgId
+var sid; //used to store the instance sid
+var users; //used to store users
+var templates;
+
+/**
+ * Get the session Id
+ */
+function getSessionId(instanceUrl) {
+    var deferred = new $.Deferred();
+    chrome.cookies.get({
+        url: instanceUrl,
+        name: "sid"
+    }, function(cookie) {
+        if (cookie) {
+            deferred.resolve(cookie.value);
+        }
+    });
+
+    return deferred;
 }
 
-function loginAs(userId){
-	chrome.tabs.update(tabid, {url: getInstanceUrl(url) +
-		 '/servlet/servlet.su?oid='+oid+
-		 '&suorgadminid='+userId + 
-		 '&retURL=%2Fhome%2Fhome.jsp'+
-		 '&targetURL=%2Fhome%2Fhome.jsp'
-	});
-}
-
-function debugLog(userId){
-	debugDeferred = new jQuery.Deferred();
-	
-	var settings = {url: getInstanceUrl(url) + '/setup/ui/listApexTraces.apexp?user_id='+userId+'&user_logging=true',active: false,selected: false}
-	
-	chrome.tabs.create(settings, function(newTab){
-		chrome.tabs.onUpdated.addListener(function(newTabId, changeInfo){
-			if(newTab.id === newTabId &&  changeInfo.status === 'complete'){
-				chrome.tabs.remove(newTab.id);
-				debugDeferred.resolve(userId);
-			}
-		});
-	});
-	
-	return debugDeferred;
-}
-
-function getUrl(){
-	return getInstanceUrl(url);
-}
-
-function getInstanceUrl(url){
-	var spl = url.split('/');
-	if(spl[2].indexOf('.salesforce.com')!=-1){
-		return spl[0] + '//' + spl[2];
-	}
-	if(spl[2].indexOf('.force.com') != -1){
-		var spl2 = spl[2].split('.');
-		return spl[0] + '//' + spl2[1] +'.salesforce.com';
-	}
-}
-
-function shout(){
-	var d = new Date($.now());
-	console.log('shout!', d.toTimeString());
+function getOrgId(){
+  var deferred = new $.Deferred();
+  console.log('getting org ID!')
+  client.query("select id, instancename from organization limit 1", function(results) {
+    if(results.records){
+      deferred.resolve(results.records[0].Id);
+    }
+    else{
+      deferred.reject();
+    }
+  });
+  return deferred;
 }
 
 function getUsers(){
-	/* first check that oid hasn't changed */
-	userDeferred = new jQuery.Deferred();
-	chrome.cookies.get({url: getInstanceUrl(url), name: "oid"}, function(cookie){
-		if((cookie.value && oid !== cookie.value) || !users){
-			oid = cookie.value;
-			client.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
-				users = response.records;
-				userDeferred.resolve(users);
-			});
-		}
-		else{
-			userDeferred.resolve(users);
-		}
-	});
-	return userDeferred;
+  var deferred = new $.Deferred();
+  console.log('getting users!');
+  if(users){
+    console.log('no update');
+    deferred.resolve(users);
+  } 
+  else{
+    client.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(response){
+      console.log('retrieved', response);
+      users = response.records;
+      deferred.resolve(users);
+    });
+  }
+  return deferred;
+}
+
+/** 
+ * Get the instance url (same as forcetk)
+ */
+function getInstanceUrl(hostname) {
+    var elements = hostname.split("."),
+        instance = null;
+    if (elements.length === 4) {
+        if (elements[1] === 'my') {
+            instance = elements[0] + '.' + elements[1];
+        } else if (elements[1] === 'lightning') {
+            instance = elements[0];
+        }
+    } else if (elements.length === 3) {
+        instance = elements[0];
+    } else {
+        instance = elements[1];
+    }
+    return "https://" + instance + ".salesforce.com";
+}
+
+function getTemplate(name){
+  var deferred = $.Deferred();
+  $.get('../partials/'+name+'.mst', function(template){
+    Mustache.parse(template);
+    deferred.resolve(template);
+  });
+  return deferred;
 }
 
 
+function setup(tab) {
+    if (tab.url && (tab.url.indexOf('.force.com') != -1 || tab.url.indexOf('.salesforce.com') != -1)) {
+        console.log('on sf page!!');
+        var pageUrl = new URL(tab.url);
+        instanceUrl = getInstanceUrl(pageUrl.hostname);
 
+        //setup client
+        getSessionId(instanceUrl).then(function(newSid){
+          if(sid != newSid){
+            console.log('new sid!! coming in!!')
+            sid = newSid;
+            users = null;
+            console.log('setting session!!')
+            client.setSessionToken(sid, 'v36.0', instanceUrl);
+            getOrgId().then(function(newOrgId){
+              console.log('setting org id!')
+              orgId = newOrgId;
 
+            });
+            getUsers().then(function(newUsers){
+              console.log('setting users!!');
+              users = newUsers;
+            });
+          }
+        });
+
+        //setup templates
+        var userTmpl = getTemplate('user');
+        var tableTmpl = getTemplate('table');
+        var headTmpl = getTemplate('head');
+
+        $.when(userTmpl,headTmpl,tableTmpl).done(function(user, head, table){
+          templates = {
+            user: user,
+            head: head,
+            table: table
+          }
+        });
+
+        chrome.pageAction.show(tab.id);
+    }
+}
+/**
+ * Show the page action when a tab is updated
+ */
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    setup(tab);
+});
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+    chrome.tabs.get(activeInfo.tabId, function(tab) {
+        setup(tab);
+    })
+});

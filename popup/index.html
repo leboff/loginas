@@ -1,24 +1,30 @@
 <!DOCTYPE html>
-<html ng-app="loginas" ng-csp="">
-<head>	
-	<link rel="stylesheet" href="css/main.css"/>
-	<link rel="stylesheet" href="../css/bootstrap.min.css"/>
-	<link rel="stylesheet" href="../css/bootstrap-theme.min.css"/>
-	<link rel="stylesheet" href="../css/angular-csp.css"/>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" href="../lib/slds/styles/salesforce-lightning-design-system.min.css"/>
+		<link rel="stylesheet" href="../styles/popup.css"/>
+		<script type="text/javascript" src="../lib/jquery-2.2.4.min.js"></script>
+		<script type="text/javascript" src="../lib/mustache.min.js"></script>
+		<script type="text/javascript" src="../lib/underscore-min.js"></script>
+	</head>
+	<body>
+		<div class="main slds">
+			<div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+				<div class="slds-form-element slds-p-top--medium slds-p-horizontal--medium slds-m-bottom--small">
+					<label class="slds-form-element__label" for="lookup">Users</label>
+					<div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+						<svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+							<use xlink:href="../lib/slds/icons/utility-sprite/svg/symbols.svg#search"></use>
+						</svg>
+						<input id="lookup" class="slds-input" type="text" aria-haspopup="true" aria-autocomplete="list" role="combobox" aria-activedescendant="" />
+					</div>
+				</div>
+				<div id="userTable">
 
-	<script type="text/javascript" src="../js/analytics.js"></script>
-	<script type="text/javascript" src="../js/jquery-1.11.1.min.js"></script>
-	<script type="text/javascript" src="../js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="../js/angular.min.js"></script>
-	<script type="text/javascript" src="../js/angular-route.min.js"></script>
-	<script type="text/javascript" src="js/app.js"></script>
-	<script type="text/javascript" src="js/services.js"></script>
-	<script type="text/javascript" src="js/controllers.js"></script>
-	<script type="text/javascript" src="js/filters.js"></script>	
-	<script type="text/javascript" src="js/directives.js"></script>
-</head>
-<body>
-	<div ng-view=""></div>
-</body>
+				</div>
+			</div>
 
-</html>
+		<script type="text/javascript" src="../js/popup.js"></script>
+		</body>
+
+	</html>

@@ -1,6 +1,6 @@
 {
-  "name": "Loginas Beta",
-  "version": "0.0.5",
+  "name": "Loginas",
+  "version": "0.9.5",
   "manifest_version": 2,
   "description": "This extension allows you to set debug logs and log in as various users in your salesforce organization",
   "homepage_url": "http://www.bryanleboff.com",

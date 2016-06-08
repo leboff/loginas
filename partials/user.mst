@@ -1,0 +1,21 @@
+<tr>
+	<th scope="row" data-label="Actions" title="{{Name}}">
+		<div class="slds-button-group" role="group">
+			<button class="slds-button slds-button--neutral">Login</button>
+		  	<button class="slds-button slds-button--neutral">Log</button>
+			<a href="/{{Id}}" target="_blank"><button class="slds-button slds-button--neutral">View</button></a>
+		</div>
+	</th>
+	<td>
+		<div class="slds-truncate">{{LastName}}</div>
+	</td>	
+	<td>
+		<div class="slds-truncate">{{FirstName}}</div>
+	</td>
+	<td data-label="User Role" title="{{Name}}">
+		<div class="slds-truncate">{{UserRole.Name}}</div>
+	</td>	
+	<td data-label="Profile" title="{{Name}}">
+		<div class="slds-truncate">{{Profile.Name}}</div>
+	</td>
+</tr>
