@@ -6,6 +6,7 @@ var orgId; //used to store the orgId
 var sid; //used to store the instance sid
 var users; //used to store users
 var templates;
+var debugLevelId;
 
 /**
  * Get the session Id
@@ -26,7 +27,6 @@ function getSessionId(instanceUrl) {
 
 function getOrgId(){
   var deferred = new $.Deferred();
-  console.log('getting org ID!')
   conn.query("select id, instancename from organization limit 1", function(err, results) {
     if(err) return deferred.reject(err);
     deferred.resolve(results.records[0].Id);
@@ -36,14 +36,11 @@ function getOrgId(){
 
 function getUsers(){
   var deferred = new $.Deferred();
-  console.log('getting users!');
   if(users){
-    console.log('no update');
     deferred.resolve(users);
   } 
   else{
     conn.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(err, results){
-      console.log('retrieved', results);
       if(err) return deferred.reject(err);
 
       users = results.records;
@@ -53,6 +50,31 @@ function getUsers(){
   return deferred;
 }
 
+function createDebugLevel(){
+  var deferred = new $.Deferred();
+  conn.tooling.sobject('DebugLevel').create({
+    ApexCode: 'DEBUG',
+    ApexProfiling: 'DEBUG',
+    Callout: 'DEBUG',
+    Database: 'DEBUG',
+    DeveloperName: 'LOGINAS_DEBUG',
+    System: 'DEBUG',
+    Validation: 'DEBUG',
+    Visualforce: 'DEBUG',
+    Workflow: 'DEBUG'
+  });
+}
+
+function getDebugLevelId(){
+  var deferred = new $.Deferred();
+  conn.tooling.sobject('DebugLevel').find().execute(function(err, records){
+    if(err) {return deferred.reject(err)}
+
+    deferred.resolve(records[0].Id);
+  });
+
+  return deferred;
+}
 /** 
  * Get the instance url (same as forcetk)
  */
@@ -75,7 +97,7 @@ function getInstanceUrl(hostname) {
 
 function getTemplate(name){
   var deferred = $.Deferred();
-  $.get('../partials/'+name+'.mst', function(template){
+  $.get('../views/partials/'+name+'.mst', function(template){
     Mustache.parse(template);
     deferred.resolve(template);
   });
@@ -85,29 +107,30 @@ function getTemplate(name){
 
 function setup(tab) {
     if (tab.url && (tab.url.indexOf('.force.com') != -1 || tab.url.indexOf('.salesforce.com') != -1)) {
-        console.log('on sf page!!');
         var pageUrl = new URL(tab.url);
         instanceUrl = getInstanceUrl(pageUrl.hostname);
 
         //setup client
         getSessionId(instanceUrl).then(function(newSid){
           if(sid != newSid){
-            console.log('new sid!! coming in!!')
             sid = newSid;
             users = null;
-            console.log('setting session!!')
+
             conn = new jsforce.Connection({
               serverUrl : instanceUrl,
               sessionId : sid
             });
-            getOrgId().then(function(newOrgId){
-              console.log('setting org id!')
-              orgId = newOrgId;
 
+            getOrgId().then(function(newOrgId){
+              orgId = newOrgId;
             });
+
             getUsers().then(function(newUsers){
-              console.log('setting users!!');
               users = newUsers;
+            });
+
+            getDebugLevelId().then(function(newDebugLevelId){
+              debugLevelId = newDebugLevelId;
             });
           }
         });
@@ -127,6 +150,45 @@ function setup(tab) {
 
         chrome.pageAction.show(tab.id);
     }
+}
+
+function openURL(url){
+  chrome.tabs.query({active: true}, function(tab){
+    console.log(tab);
+    chrome.tabs.update(tab[0].id, {url: url});
+  });
+}
+
+function viewUser(id){
+  openURL(instanceUrl + '/'+id+'?noredirect=1&isUserEntityOverride=1');
+}
+function loginAsUser(id){
+  openURL(instanceUrl +  
+    '/servlet/servlet.su?oid='+orgId+
+    '&suorgadminid='+id + 
+    '&retURL=%2Fhome%2Fhome.jsp'+
+    '&targetURL=%2Fhome%2Fhome.jsp');
+}
+function debugUser(id){
+  var start = new Date();
+  var end = new Date();
+  end.setHours(end.getHours()+4);
+
+  conn.tooling.sobject('TraceFlag').create({
+    ApexCode: 'DEBUG',
+    ApexProfiling: 'DEBUG',
+    Callout: 'DEBUG',
+    Database: 'DEBUG',
+    DebugLevelId: debugLevelId,
+    ExpirationDate: end.toISOString(),
+    LogType: 'USER_DEBUG',
+    StartDate: start.toISOString(), 
+    System: 'DEBUG',
+    TracedEntityId: id,
+    Validation: 'DEBUG',
+    Visualforce: 'DEBUG',
+    Workflow: 'DEBUG'
+  });
 }
 /**
  * Show the page action when a tab is updated

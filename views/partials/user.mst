@@ -1,9 +1,9 @@
 <tr>
 	<th scope="row" data-label="Actions" title="{{Name}}">
 		<div class="slds-button-group" role="group">
-			<button class="slds-button slds-button--neutral">Login</button>
-		  	<button class="slds-button slds-button--neutral">Log</button>
-			<a href="/{{Id}}" target="_blank"><button class="slds-button slds-button--neutral">View</button></a>
+			<button class="slds-button slds-button--neutral login-btn" data-sfid="{{Id}}">Login</button>
+		  	<button class="slds-button slds-button--neutral debug-btn" data-sfid="{{Id}}">Debug</button>
+			<button class="slds-button slds-button--neutral view-btn" data-sfid="{{Id}}">View</button></a>
 		</div>
 	</th>
 	<td>

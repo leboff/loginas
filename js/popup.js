@@ -11,6 +11,21 @@ function renderView(view){
 	});
 
 	$('#userTable').append(render);
+
+	$('.login-btn').click(function(btn){
+		var sfid = $(btn.target).data('sfid');
+		bp.loginAsUser(sfid);
+	});
+
+	$('.debug-btn').click(function(btn){
+		var sfid = $(btn.target).data('sfid');
+		bp.debugUser(sfid);
+	});
+
+	$('.view-btn').click(function(btn){
+		var sfid = $(btn.target).data('sfid');
+		bp.viewUser(sfid);
+	});
 }
 
 

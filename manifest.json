@@ -15,12 +15,12 @@
       "38": "icons/icon38.png"
     },
     "default_title": "Loginas",
-    "default_popup": "popup/index.html"
+    "default_popup": "views/popup.html"
    },
   "default_locale": "en",
   "background": {
-    "page": "bg/background.html",
-    "persistent": true
+    "scripts": ["lib/jquery-2.2.4.min.js", "lib/mustache.min.js", "lib/underscore-min.js", "lib/jsforce.js", "js/background.js"],
+    "persistent" : true
   },
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "permissions": [
