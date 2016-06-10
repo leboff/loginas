@@ -10,12 +10,15 @@ var debugLevels; //used to debugLevels
 /**
  * Get the session Id
  */
-function getSessionId(instanceUrl) {
+function getSessionId(instance) {
     var deferred = new $.Deferred();
-    chrome.cookies.get({
-        url: instanceUrl,
-        name: "sid"
-    }, function(cookie) {
+    chrome.cookies.getAll({
+        name: "sid",
+        domain: "salesforce.com"
+    }, function(cookies) {
+        var cookie = _.find(cookies, function(c){
+          return c.domain.indexOf(instance+'.') != -1;
+        });
         if (cookie) {
             deferred.resolve(cookie.value);
         }
@@ -77,26 +80,19 @@ function getDebugLevels(){
 /** 
  * Get the instance url (same as forcetk)
  */
-function getInstanceUrl(hostname) {
-    var elements = hostname.split("."),
-        instance = null;
-    if(elements.length === 5){
-      if(elements[2] === 'my'){
-        instance = elements[0] + '.' + elements[1] + '.' + elements[2];
-      }
+function getInstance(hostname) {
+    var elements = hostname.split(".");
+
+    if(elements[0] === 'c'){
+      return elements[1];
     }
-    else if (elements.length === 4) {
-        if (elements[1] === 'my') {
-            instance = elements[0] + '.' + elements[1];
-        } else if (elements[1] === 'lightning') {
-            instance = elements[0];
-        }
-    } else if (elements.length === 3) {
-        instance = elements[0];
-    } else {
-        instance = elements[1];
+    
+    if(elements[0].indexOf('--c')!=-1){
+      return elements[0].substring(0, elements[0].indexOf('--c'));
     }
-    return "https://" + instance + ".salesforce.com";
+
+    return elements[0];
+    
 }
 
 /**
@@ -115,11 +111,13 @@ function resetCache(){
 function setup(tab) {
     if (tab.url && (tab.url.indexOf('.force.com') != -1 || tab.url.indexOf('.salesforce.com') != -1)) {
         var pageUrl = new URL(tab.url);
-        instanceUrl = getInstanceUrl(pageUrl.hostname);
-        log.debug('Loginas', 'At a Salesforce URL', instanceUrl);
+        var instance = getInstance(pageUrl.hostname);
+
+        instanceUrl = 'https://'+pageUrl.hostname;
+        log.debug('Loginas', 'At a Salesforce URL', instanceUrl, instance);
 
         //setup client
-        getSessionId(instanceUrl).done(function(newSid){
+        getSessionId(instance).done(function(newSid){
           if(sid != newSid){
             log.debug('Loginas', 'New session id');
 
