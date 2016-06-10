@@ -1,4 +1,3 @@
-log.setLevel("debug")
 //setup a new forcetk client
 var conn;
 
@@ -6,24 +5,8 @@ var instanceUrl; //used to store the instance url
 var orgId; //used to store the orgId
 var sid; //used to store the instance sid
 var users; //used to store users
-var templates;
-var debugLevelId;
+var debugLevels; //used to debugLevels
 
-/**
- * Load templates
- */
-var userTmpl = getTemplate('user');
-var tableTmpl = getTemplate('table');
-var headTmpl = getTemplate('head');
-
-
-$.when(userTmpl,headTmpl,tableTmpl).done(function(user, head, table){
-  templates = {
-    user: user,
-    head: head,
-    table: table
-  }
-});
 /**
  * Get the session Id
  */
@@ -45,10 +28,16 @@ function getSessionId(instanceUrl) {
 
 function getOrgId(){
   var deferred = new $.Deferred();
-  conn.query("select id, instancename from organization limit 1", function(err, results) {
-    if(err) return deferred.reject(err);
-    deferred.resolve(results.records[0].Id);
-  });
+  if(orgId){
+    deferred.resolve(orgId);
+  }
+  else{
+    conn.query("select id, instancename from organization limit 1", function(err, results) {
+      if(err) return deferred.reject(err);
+      orgId = results.records[0].Id;
+      deferred.resolve(results.records[0].Id);
+    });
+  }
   return deferred;
 }
 
@@ -60,58 +49,29 @@ function getUsers(){
   else{
     conn.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(err, results){
       if(err) return deferred.reject(err);
-
       users = results.records;
-      deferred.resolve(users);
+      deferred.resolve(results.records);
     });
   }
   return deferred;
 }
 
-function createDebugLevel(){
+/**
+ * Get the Org's debug levels
+ */
+function getDebugLevels(){
   var deferred = new $.Deferred();
-
-  restoreOptions(function(options){
-    options.MasterLabel = 'LoginasDebug';
-    options.DeveloperName = 'LoginasDebug';
-    conn.tooling.sobject('DebugLevel').create(options, function(err, response){
-      if(err) return deferred.reject(err);
-      deferred.resolve(response);
+  if(debugLevels){
+    deferred.resolve(debugLevels);
+  }
+  else{
+    conn.tooling.sobject('DebugLevel').find().execute(function(err, records){
+      if(err) {return deferred.reject(err)}
+      //store for future
+      debugLevels = records;
+      deferred.resolve(records);
     });
-  });
-  return deferred;
-}
-
-function updateDebugLevel(){
-  var deferred = new $.Deferred();
-
-  restoreOptions(function(options){
-    options.DeveloperName = 'LoginasDebug';
-    conn.tooling.sobject('DebugLevel').update(options, function(err, response){
-      if(err) return deferred.reject(err);
-      deferred.resolve(response);
-    });
-  });
-  return deferred;
-}
-
-
-
-function getDebugLevel(){
-  var deferred = new $.Deferred();
-  conn.tooling.sobject('DebugLevel').find({MasterLabel: 'LoginasDebug'}).execute(function(err, records){
-    if(err) {return deferred.reject(err)}
-
-    if(records.length > 0){
-      deferred.resolve(records[0]);
-    }
-    else{
-      createDebugLevel().then(function(debugLevel){
-        deferred.resolve(debugLevel);
-      });
-    }
-  });
-
+  }
   return deferred;
 }
 /** 
@@ -120,7 +80,12 @@ function getDebugLevel(){
 function getInstanceUrl(hostname) {
     var elements = hostname.split("."),
         instance = null;
-    if (elements.length === 4) {
+    if(elements.length === 5){
+      if(elements[2] === 'my'){
+        instance = elements[0] + '.' + elements[1] + '.' + elements[2];
+      }
+    }
+    else if (elements.length === 4) {
         if (elements[1] === 'my') {
             instance = elements[0] + '.' + elements[1];
         } else if (elements[1] === 'lightning') {
@@ -134,8 +99,19 @@ function getInstanceUrl(hostname) {
     return "https://" + instance + ".salesforce.com";
 }
 
+/**
+ * Reset the cached data
+ */
+function resetCache(){
+    users = null;
+    sid = null;
+    orgId = null;
+    debugLevels = null;
+}
 
-
+/**
+ * Setup the background page, get the session id and create a new connection
+ */
 function setup(tab) {
     if (tab.url && (tab.url.indexOf('.force.com') != -1 || tab.url.indexOf('.salesforce.com') != -1)) {
         var pageUrl = new URL(tab.url);
@@ -147,74 +123,19 @@ function setup(tab) {
           if(sid != newSid){
             log.debug('Loginas', 'New session id');
 
+            resetCache();
+            //store the new session id
             sid = newSid;
-            users = null;
 
+            //create a new jsforce connection
             conn = new jsforce.Connection({
               serverUrl : instanceUrl,
               sessionId : sid
             });
 
-            getOrgId().done(function(newOrgId){
-              log.debug('Loginas', 'Retrieved org id '+newOrgId);
-
-              orgId = newOrgId;
-            }).fail(function(error){
-              log.error('Loginas', 'Error retrieving org id');
-              log.error('Loginas', error);
-            });
-
-            getUsers().done(function(newUsers){
-              log.debug('Loginas', 'Retrieved users', newUsers);
-
-              users = newUsers;
-            }).fail(function(error){
-              log.error('Loginas', 'Error retrieving users');
-              log.error('Loginas', error);
-            });
-
-            restoreOptions(function(options){
-              log.debug('Loginas', 'Retrieved options', options);
-
-               getDebugLevel().done(function(debugLevel){
-                log.debug('Loginas', 'Retrieved debugLevel', debugLevel);
-
-                if(options.ApexCode != debugLevel.ApexCode 
-                  || options.ApexProfiling != debugLevel.ApexProfiling 
-                  || options.Callout != debugLevel.Callout 
-                  || options.Database != debugLevel.Database 
-                  || options.System != debugLevel.System 
-                  || options.Validation != debugLevel.Validation 
-                  || options.Visualforce != debugLevel.Visualforce 
-                  || options.Workflow != debugLevel.Workflow){
-
-                  if(debugLevel.id){
-                    log.debug('Loginas', 'Updating debug level '+debugLevel.id);
-
-                    options.Id = debugLevel.id;
-                    updateDebugLevel(options);
-                    debugLevelId = debugLevel.id;
-                  }
-                  else{
-                    createDebugLevel(options).done(function(newDebugLevel){
-                      log.debug('Loginas', 'Created debug level '+newDebugLevel);
-
-                      debugLevelId = newDebugLevel.id;
-                    }).fail(function(error){
-                      log.error('Loginas', 'Error creating debug level');
-                      log.error('Loginas', error);
-                    });
-                  }
-
-                  
-                }
-              }).fail(function(error){
-                log.error('Loginas', 'Error retriving debug level');
-                log.error('Loginas', error);
-              });
-            });
           }
         }).fail(function(error){
+          resetCache();
           log.error('Loginas', 'Error getting session id');
           log.error('Loginas', error);
         });
@@ -226,43 +147,100 @@ function setup(tab) {
     }
 }
 
+/**
+ * Open the active tab to a particular URL
+ */
 function openURL(url){
+  var deferred = new $.Deferred();
+
   chrome.tabs.query({active: true}, function(tab){
     chrome.tabs.update(tab[0].id, {url: url});
+    deferred.resolve();
   });
+
+  return deferred;
 }
 
+/**
+ * Show the user detail page
+ */
 function viewUser(id){
-  openURL(instanceUrl + '/'+id+'?noredirect=1&isUserEntityOverride=1');
+  log.debug('Loginas', 'Showing user', id);
+  return openURL(instanceUrl + '/'+id+'?noredirect=1&isUserEntityOverride=1');
 }
+
+/**
+ * Show the debug logs page
+ */
+function showDebugLogs(){
+  log.debug('Loginas', 'Showing debug logs');
+  return openURL(instanceUrl + '/setup/ui/listApexTraces.apexp')
+}
+
+/**
+ * Login as a user
+ */
 function loginAsUser(id){
-  openURL(instanceUrl +  
-    '/servlet/servlet.su?oid='+orgId+
-    '&suorgadminid='+id + 
-    '&retURL=%2Fhome%2Fhome.jsp'+
-    '&targetURL=%2Fhome%2Fhome.jsp');
+  log.debug('Loginas', 'Logging in as', id);
+
+  var deferred = new $.Deferred();
+  //get the org id for logging in
+  getOrgId().done(function(newOrgId){
+    log.debug('Loginas', 'Retrieved org id '+newOrgId);
+    openURL(instanceUrl +  
+      '/servlet/servlet.su?oid='+orgId+
+      '&suorgadminid='+id + 
+      '&retURL=%2Fhome%2Fhome.jsp'+
+      '&targetURL=%2Fhome%2Fhome.jsp').then(function(){
+        deferred.resolve();
+      });
+  }).fail(function(error){
+    log.error('Loginas', 'Error retrieving org id');
+    log.error('Loginas', error);
+    deferred.reject(error);
+  });
+
+  return deferred;
+  
 }
-function debugUser(id){
+
+/**
+ * Add a debug log to a particular users
+ */
+function debugUser(id, debugLevelId){
+  log.debug('Loginas', 'Creating debug log', id, debugLevelId);
+
+  var deferred = new $.Deferred();
+
+  //setup dates
   var start = new Date();
   var end = new Date();
   end.setHours(end.getHours()+4);
 
+  //create traceflag
   conn.tooling.sobject('TraceFlag').create({
-    ApexCode: 'DEBUG',
-    ApexProfiling: 'DEBUG',
-    Callout: 'DEBUG',
-    Database: 'DEBUG',
     DebugLevelId: debugLevelId,
     ExpirationDate: end.toISOString(),
     LogType: 'USER_DEBUG',
     StartDate: start.toISOString(), 
-    System: 'DEBUG',
-    TracedEntityId: id,
-    Validation: 'DEBUG',
-    Visualforce: 'DEBUG',
-    Workflow: 'DEBUG'
+    TracedEntityId: id
+  }, function(err, result){
+    if(err) {
+      log.error('Loginas', 'Error creating debug log');
+      log.error('Loginas', err);
+
+      deferred.reject(err);
+    }
+    else{
+      log.debug('Loginas', 'Created debug log for ',id, result);
+
+      deferred.resolve(result);
+    }
   });
+
+  return deferred;
 }
+
 /**
  * Show the page action when a tab is updated
  */

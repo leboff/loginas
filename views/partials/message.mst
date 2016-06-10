@@ -1,15 +1,8 @@
 <div class="slds-notify_container">
   <div class="slds-notify slds-notify--alert slds-theme--{{theme}} slds-theme--alert-texture" role="alert">
-    <button class="slds-button slds-button--icon-inverse slds-notify__close">
-      <svg aria-hidden="true" class="slds-button__icon">
-        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
-      </svg>
-      <span class="slds-assistive-text">Close</span>
-    </button>
-    <span class="slds-assistive-text">Success</span>
     <h2>
       <svg aria-hidden="true" class="slds-icon icon-text-email slds-icon--small slds-m-right--x-small">
-        <use xlink:href="/assets/icons/custom-sprite/svg/symbols.svg#{{icon}}"></use>
+        <use xlink:href="../lib/slds/icons/utility-sprite/svg/symbols.svg#{{icon}}"></use>
       </svg>{{message}}
     </h2>
   </div>

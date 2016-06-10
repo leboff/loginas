@@ -8,6 +8,6 @@ _gaq.push(['_trackPageview']);
   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();
 
-function trackLogin(e) {
-    _gaq.push(['_trackEvent', e.target.className, 'clicked']);
+function trackEvent(ev) {
+    _gaq.push(['_trackEvent', ev, 'clicked']);
 };

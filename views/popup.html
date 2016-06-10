@@ -3,25 +3,42 @@
 	<head>
 		<link rel="stylesheet" href="../lib/slds/styles/salesforce-lightning-design-system.min.css"/>
 		<link rel="stylesheet" href="../css/popup.css"/>
+		<script type="text/javascript" src="../lib/loglevel.min.js"></script>
 		<script type="text/javascript" src="../lib/jquery-2.2.4.min.js"></script>
 		<script type="text/javascript" src="../lib/mustache.min.js"></script>
 		<script type="text/javascript" src="../lib/underscore-min.js"></script>
 	</head>
 	<body>
 		<div class="main slds">
-			<div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
-				<div class="slds-form-element slds-p-top--medium slds-p-horizontal--medium slds-m-bottom--small">
-					<div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
-						<svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
-							<use xlink:href="../lib/slds/icons/utility-sprite/svg/symbols.svg#search"></use>
-						</svg>
-						<input id="lookup" class="slds-input" type="text" aria-haspopup="true" aria-autocomplete="list" role="combobox" aria-activedescendant="" />
+			<div class="slds-grid" id="notifications"></div>
+			<fieldset class="slds-form--compound">
+				<div class="form-element__group slds-p-top--medium slds-p-horizontal--medium slds-m-bottom--small">
+					<div id="search-form" class="slds-form-element__row">
+						<div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+							<div class="slds-form-element">
+								<label class="slds-form-element__label" for="lookup">Search</label>
+								<div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+									<svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+										<use xlink:href="../lib/slds/icons/utility-sprite/svg/symbols.svg#search"></use>
+									</svg>
+									<input id="lookup" class="slds-input" type="text" aria-haspopup="true" aria-autocomplete="list" role="combobox" aria-activedescendant="" />
+								</div>
+							</div>
+						</div>
+						
 					</div>
 				</div>
-				<div id="userTable">
-				</div>
+			</fieldset>
+			<div class="slds-grid slds-grid--align-end slds-p-horizontal--medium">
+				<span id="showLogs" class="slds-type-focus">Show Debug Logs</span>
+				
 			</div>
+
+			<div id="userTable">
+			</div>
+		
 		</div>
 		<script type="text/javascript" src="../js/popup.js"></script>
+		<script type="text/javascript" src="../js/analytics.js"></script>
 	</body>
 </html>

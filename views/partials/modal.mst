@@ -1,0 +1,17 @@
+<div class="slds-modal slds-fade-in-open" aria-hidden="false" role="dialog">
+  <div class="slds-modal__container">
+    <div class="slds-modal__header">
+      <h2 class="slds-text-heading--medium">{{header}}</h2>
+    </div>
+    <div class="slds-modal__content slds-p-around--medium">
+      <div>
+        {{> content}}
+      </div>
+    </div>
+    <div class="slds-modal__footer">
+      <button class="slds-button slds-button--neutral"  id="modal-cancel">Cancel</button>
+      <button class="slds-button slds-button--neutral slds-button--brand" id="modal-save">Save</button>
+    </div>
+  </div>
+</div>
+<div class="slds-backdrop slds-backdrop--open"></div>
