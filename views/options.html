@@ -2,9 +2,183 @@
 <html lang="en">
 	<head>
 		<link rel="stylesheet" href="../lib/slds/styles/salesforce-lightning-design-system.min.css"/>
+		<script type="text/javascript" src="../lib/jquery-2.2.4.min.js"></script>
+		<script type="text/javascript" src="../lib/mustache.min.js"></script>
+		<script type="text/javascript" src="../js/common.js"></script>
+		<script type="text/javascript" src="../js/options.js"></script>
 	</head>
 	<body>
-	
+		<div class="slds">
+			<div class="slds-grid" id="notifications"></div>
+			<div class="slds-grid">
+				<div class="slds-col--padded slds-size--1-of-1">
+					<div class="slds-page-header" role="banner">
+						<div class="slds-media slds-media--center">
+							<div class="slds-media__figure">
+								<svg aria-hidden="true" class="slds-icon slds-icon-custom-custom67">
+									<use xlink:href="../lib/slds/icons/custom-sprite/svg/symbols.svg#custom67"></use>
+								</svg>
+							</div>
+							<div class="slds-media__body">
+								<p class="slds-page-header__title slds-truncate slds-align-middle" title="Loginas - Settings">Loginas - Settings</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="slds-grid slds-p-top--medium">
+				<div class="slds-col--padded slds-size--1-of-6">
+					<div class="slds-text-heading--medium">Debug Log Levels</div>
+				</div>
+				<div class="slds-col--padded slds-size--5-of-6">
+					<div class="slds-form--horizontal">
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="apexCode">Apex Code</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="apexCode" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="apexProfiling">Apex Profiling</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="apexProfiling" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="callout">Callout</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="callout" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="database">Database</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="database" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="system">System</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="system" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="validation">Validation</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="validation" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="visualforce">Visualforce</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="visualforce" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="slds-form-element">
+							<label class="slds-form-element__label" for="workflow">Workflow</label>
+							<div class="slds-form-element__control">
+								<div class="slds-select_container">
+									<select id="workflow" class="slds-select">
+										<option value="NONE">NONE</option>
+										<option value="ERROR">ERROR</option>
+										<option value="WARN">WARN</option>
+										<option value="INFO">INFO</option>
+										<option value="DEBUG">DEBUG</option>
+										<option value="FINE">FINE</option>
+										<option value="FINER">FINER</option>
+										<option value="FINEST">FINEST</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="slds-clearfix slds-p-top--medium">
+						<div class="slds-float--right">
+							<div class="slds-button-group" role="group">
+								<button id="save" class="slds-button slds-button--neutral">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		</div>
 	</body>
-
 </html>

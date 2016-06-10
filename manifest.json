@@ -19,14 +19,16 @@
    },
   "default_locale": "en",
   "background": {
-    "scripts": ["lib/jquery-2.2.4.min.js", "lib/mustache.min.js", "lib/underscore-min.js", "lib/jsforce.js", "js/background.js"],
+    "scripts": ["lib/loglevel.min.js", "lib/jquery-2.2.4.min.js", "lib/mustache.min.js", "lib/underscore-min.js", "lib/jsforce.js", "js/common.js", "js/background.js"],
     "persistent" : true
   },
+  "options_page" : "views/options.html",
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "permissions": [
     "https://*.salesforce.com/*",
     "https://*.force.com/*",
     "cookies",
-    "tabs"
+    "tabs",
+    "storage"
   ]
 }

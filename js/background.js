@@ -1,3 +1,4 @@
+log.setLevel("debug")
 //setup a new forcetk client
 var conn;
 
@@ -8,6 +9,21 @@ var users; //used to store users
 var templates;
 var debugLevelId;
 
+/**
+ * Load templates
+ */
+var userTmpl = getTemplate('user');
+var tableTmpl = getTemplate('table');
+var headTmpl = getTemplate('head');
+
+
+$.when(userTmpl,headTmpl,tableTmpl).done(function(user, head, table){
+  templates = {
+    user: user,
+    head: head,
+    table: table
+  }
+});
 /**
  * Get the session Id
  */
@@ -20,8 +36,10 @@ function getSessionId(instanceUrl) {
         if (cookie) {
             deferred.resolve(cookie.value);
         }
+        else{
+          deferred.reject('No cookie named sid for '+instanceUrl+' found');
+        }
     });
-
     return deferred;
 }
 
@@ -52,25 +70,46 @@ function getUsers(){
 
 function createDebugLevel(){
   var deferred = new $.Deferred();
-  conn.tooling.sobject('DebugLevel').create({
-    ApexCode: 'DEBUG',
-    ApexProfiling: 'DEBUG',
-    Callout: 'DEBUG',
-    Database: 'DEBUG',
-    DeveloperName: 'LOGINAS_DEBUG',
-    System: 'DEBUG',
-    Validation: 'DEBUG',
-    Visualforce: 'DEBUG',
-    Workflow: 'DEBUG'
+
+  restoreOptions(function(options){
+    options.MasterLabel = 'LoginasDebug';
+    options.DeveloperName = 'LoginasDebug';
+    conn.tooling.sobject('DebugLevel').create(options, function(err, response){
+      if(err) return deferred.reject(err);
+      deferred.resolve(response);
+    });
   });
+  return deferred;
 }
 
-function getDebugLevelId(){
+function updateDebugLevel(){
   var deferred = new $.Deferred();
-  conn.tooling.sobject('DebugLevel').find().execute(function(err, records){
+
+  restoreOptions(function(options){
+    options.DeveloperName = 'LoginasDebug';
+    conn.tooling.sobject('DebugLevel').update(options, function(err, response){
+      if(err) return deferred.reject(err);
+      deferred.resolve(response);
+    });
+  });
+  return deferred;
+}
+
+
+
+function getDebugLevel(){
+  var deferred = new $.Deferred();
+  conn.tooling.sobject('DebugLevel').find({MasterLabel: 'LoginasDebug'}).execute(function(err, records){
     if(err) {return deferred.reject(err)}
 
-    deferred.resolve(records[0].Id);
+    if(records.length > 0){
+      deferred.resolve(records[0]);
+    }
+    else{
+      createDebugLevel().then(function(debugLevel){
+        deferred.resolve(debugLevel);
+      });
+    }
   });
 
   return deferred;
@@ -95,24 +134,19 @@ function getInstanceUrl(hostname) {
     return "https://" + instance + ".salesforce.com";
 }
 
-function getTemplate(name){
-  var deferred = $.Deferred();
-  $.get('../views/partials/'+name+'.mst', function(template){
-    Mustache.parse(template);
-    deferred.resolve(template);
-  });
-  return deferred;
-}
 
 
 function setup(tab) {
     if (tab.url && (tab.url.indexOf('.force.com') != -1 || tab.url.indexOf('.salesforce.com') != -1)) {
         var pageUrl = new URL(tab.url);
         instanceUrl = getInstanceUrl(pageUrl.hostname);
+        log.debug('Loginas', 'At a Salesforce URL', instanceUrl);
 
         //setup client
-        getSessionId(instanceUrl).then(function(newSid){
+        getSessionId(instanceUrl).done(function(newSid){
           if(sid != newSid){
+            log.debug('Loginas', 'New session id');
+
             sid = newSid;
             users = null;
 
@@ -121,40 +155,79 @@ function setup(tab) {
               sessionId : sid
             });
 
-            getOrgId().then(function(newOrgId){
+            getOrgId().done(function(newOrgId){
+              log.debug('Loginas', 'Retrieved org id '+newOrgId);
+
               orgId = newOrgId;
+            }).fail(function(error){
+              log.error('Loginas', 'Error retrieving org id');
+              log.error('Loginas', error);
             });
 
-            getUsers().then(function(newUsers){
+            getUsers().done(function(newUsers){
+              log.debug('Loginas', 'Retrieved users', newUsers);
+
               users = newUsers;
+            }).fail(function(error){
+              log.error('Loginas', 'Error retrieving users');
+              log.error('Loginas', error);
             });
 
-            getDebugLevelId().then(function(newDebugLevelId){
-              debugLevelId = newDebugLevelId;
+            restoreOptions(function(options){
+              log.debug('Loginas', 'Retrieved options', options);
+
+               getDebugLevel().done(function(debugLevel){
+                log.debug('Loginas', 'Retrieved debugLevel', debugLevel);
+
+                if(options.ApexCode != debugLevel.ApexCode 
+                  || options.ApexProfiling != debugLevel.ApexProfiling 
+                  || options.Callout != debugLevel.Callout 
+                  || options.Database != debugLevel.Database 
+                  || options.System != debugLevel.System 
+                  || options.Validation != debugLevel.Validation 
+                  || options.Visualforce != debugLevel.Visualforce 
+                  || options.Workflow != debugLevel.Workflow){
+
+                  if(debugLevel.id){
+                    log.debug('Loginas', 'Updating debug level '+debugLevel.id);
+
+                    options.Id = debugLevel.id;
+                    updateDebugLevel(options);
+                    debugLevelId = debugLevel.id;
+                  }
+                  else{
+                    createDebugLevel(options).done(function(newDebugLevel){
+                      log.debug('Loginas', 'Created debug level '+newDebugLevel);
+
+                      debugLevelId = newDebugLevel.id;
+                    }).fail(function(error){
+                      log.error('Loginas', 'Error creating debug level');
+                      log.error('Loginas', error);
+                    });
+                  }
+
+                  
+                }
+              }).fail(function(error){
+                log.error('Loginas', 'Error retriving debug level');
+                log.error('Loginas', error);
+              });
             });
           }
-        });
-
-        //setup templates
-        var userTmpl = getTemplate('user');
-        var tableTmpl = getTemplate('table');
-        var headTmpl = getTemplate('head');
-
-        $.when(userTmpl,headTmpl,tableTmpl).done(function(user, head, table){
-          templates = {
-            user: user,
-            head: head,
-            table: table
-          }
+        }).fail(function(error){
+          log.error('Loginas', 'Error getting session id');
+          log.error('Loginas', error);
         });
 
         chrome.pageAction.show(tab.id);
+    }
+    else{
+      log.debug('Loginas', 'Not a Salesforce URL');
     }
 }
 
 function openURL(url){
   chrome.tabs.query({active: true}, function(tab){
-    console.log(tab);
     chrome.tabs.update(tab[0].id, {url: url});
   });
 }
