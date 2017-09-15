@@ -1,7 +1,7 @@
 {
   "name": "Loginas - Login as your Salesforce Users",
   "short_name": "Loginas",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "manifest_version": 2,
   "description": "Login as and add Debug Logs to your Salesforce users with an easy searchable interface removing the need to navigate the setup menu.",
   "homepage_url": "http://www.bryanleboff.com",
@@ -20,9 +20,10 @@
    },
   "default_locale": "en",
   "background": {
-    "scripts": ["lib/loglevel.min.js", "lib/jquery-2.2.4.min.js", "lib/mustache.min.js", "lib/underscore-min.js", "lib/jsforce.js", "js/templates.js", "js/background.js"],
+    "scripts": ["lib/loglevel.min.js", "lib/jquery-2.2.4.min.js", "lib/mustache.min.js",  "lib/jsforce.js", "lib/lodash.min.js", "js/templates.js", "js/options.js", "js/background.js"],
     "persistent" : true
   },
+  "options_page": "views/options.html",
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "permissions": [
     "https://*.salesforce.com/*",

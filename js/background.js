@@ -6,7 +6,6 @@ var orgId; //used to store the orgId
 var sid; //used to store the instance sid
 var users; //used to store users
 var debugLevels; //used to debugLevels
-
 /**
  * Get the session Id
  */
@@ -44,18 +43,43 @@ function getOrgId(){
   return deferred;
 }
 
-function getUsers(){
+function getSelect(selectFields){
+  var queryFields = _.map(selectFields, function(field){
+    return field.replace('-', '.');
+  });
+  return queryFields.join(',');
+}
+
+function getWhere(selectFields, query){
+  
+  var where = _.map(_.without(selectFields, 'Id'), function(field){
+    return field +" like '%"+query+"%' ";
+  });
+  return where.join(' or ');
+}
+
+function getUsers(name){
   var deferred = new $.Deferred();
-  if(users){
-    deferred.resolve(users);
-  } 
-  else{
-    conn.query("select id, name, firstname, lastname, profile.name, userrole.name from User where isactive = true order by LastName", function(err, results){
-      if(err) return deferred.reject(err);
-      users = results.records;
-      deferred.resolve(results.records);
+  var query = name || '';
+  restoreOptions().then(function(options){
+    var fieldNames = _.map(_.map(options.userFields, 'id'), function(field){
+      return field.replace('-', '.');
     });
-  }
+
+    var selectFields = _.union(fieldNames, ['Id', 'Name', 'FirstName', 'LastName']);
+  
+    conn.query("select  " + selectFields.join(',') +
+                "  from User where isactive = true and (" + getWhere(selectFields, query) + 
+                ") order by LastName limit 100", 
+      function(err, results){
+        if(err) return deferred.reject(err);
+        users = results.records;
+        deferred.resolve(results.records);
+    });
+  })
+  
+  
+  
   return deferred;
 }
 
@@ -151,7 +175,7 @@ function setup(tab) {
 function openURL(url){
   var deferred = new $.Deferred();
 
-  chrome.tabs.query({active: true}, function(tab){
+  chrome.tabs.query({active: true, currentWindow: true}, function(tab){
     chrome.tabs.update(tab[0].id, {url: url});
     deferred.resolve();
   });
@@ -189,9 +213,7 @@ function loginAsUser(id){
       '/servlet/servlet.su?oid='+orgId+
       '&suorgadminid='+id + 
       '&retURL=%2Fhome%2Fhome.jsp'+
-      '&targetURL=%2Fhome%2Fhome.jsp').then(function(){
-        deferred.resolve();
-      });
+      '&targetURL=%2Fhome%2Fhome.jsp').then(deferred.resolve);
   }).fail(function(error){
     log.error('Loginas', 'Error retrieving org id');
     log.error('Loginas', error);
@@ -201,6 +223,8 @@ function loginAsUser(id){
   return deferred;
   
 }
+
+
 
 /**
  * Add a debug log to a particular users

@@ -1,4 +1,4 @@
-<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+<table class="slds-table slds-table--bordered slds-table--resizable-cols slds-table--fixed-layout" role="grid">
 	{{> head }}
 	<tbody>
 		{{#users}}

@@ -79,9 +79,18 @@ function renderView(view){
 
 	$('#userTable').append(table);
 
+	$('.slds-dropdown-trigger--click').click(function(action){
+		var menu = $(action.target).closest('.slds-dropdown-trigger');
+		if(menu.hasClass('slds-is-open')){
+			menu.removeClass('slds-is-open');
+		}
+		else{
+			menu.addClass('slds-is-open');
+		}
+	})
 	//setup login button
 	$('.login-btn').click(function(btn){
-		var sfid = $(btn.target).data('sfid');
+		var sfid = $(btn.target).closest('.login-btn').data('sfid');
 		$(btn.target).append(loading);
 
 		bp.loginAsUser(sfid).fail(function(error){
@@ -94,15 +103,13 @@ function renderView(view){
 
 	//setup debug button
 	$('.debug-btn').click(function(btn){
-		var sfid = $(btn.target).data('sfid');
-
+		var sfid = $(btn.target).closest('.debug-btn').data('sfid');
 		showDebugModal(sfid);
-	
 	});
 
 	//setup view button
 	$('.view-btn').click(function(btn){
-		var sfid = $(btn.target).data('sfid');
+		var sfid = $(btn.target).closest('.view-btn').data('sfid');
 		$(btn.target).append(loading);
 		
 		bp.viewUser(sfid).fail(function(error){
@@ -117,15 +124,47 @@ function renderView(view){
 
 function filter(users){
 	//filter user list
+	var deferred = new $.Deferred();
 	var query = $('#lookup').val().toLowerCase();
-	if(query.length < 2) return users;
-	return _.filter(users, function(user){
-		var objString = JSON.stringify(user).toLowerCase();
-		return objString.indexOf(query) != -1;
-	});
+
+	$('body').append(bigLoading);
+	
+	if(query.length == 0) return bp.getUsers();
+	if(query.length < 2) return deferred.resolve(users);
+
+	bp.getUsers(query).then(deferred.resolve)
+
+
+	return deferred;
 
 }
 
+var createRows = function(users){
+	var deferred = new $.Deferred();
+	var columns = [{id: 'Name', label: 'Name'}];
+	restoreOptions().then(function(options){
+		//setup view
+		_.each(options.userFields, function(field){
+			columns.push(field);
+		})
+		var rows = _.map(users, function(user){
+			var row = _.map(columns, function(column){
+				return {
+					label: column.label,
+					value: _.get(user, column.id.replace('-', '.'))
+				}
+			})
+			row.Id = user.Id;
+			return row;
+		});
+		var view = {
+			columns: columns,
+			users: rows
+		}
+		deferred.resolve(view);
+	});
+	return deferred;
+}
 log.debug('Loginas', 'background sid', bp.sid);
 if(bp.sid){
 	log.debug('Loginas', 'Getting users');
@@ -135,21 +174,19 @@ if(bp.sid){
 
 	bp.getUsers().done(function(users){
 
-		//setup view
-		var view = {
-			columns: ['Action', 'Last', 'First',  'Role', 'Profile'],
-			users: users
-		}
-
 		//render view
-		renderView(view);
+		createRows(users).then(renderView);
 
 		//setup lookup search
 		$('#lookup').keyup(function(){
-			view.users = filter(users);
-			renderView(view);
-		});
 
+			filter(users)
+				.then(createRows)
+				.then(function(view){
+					bigLoading.remove();
+					renderView(view);
+				});
+		});
 	}).fail(function(error){
 		bigLoading.remove();
 		addMessage('error', error, 'error');

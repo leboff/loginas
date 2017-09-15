@@ -1,9 +1,12 @@
 <thead>
 	<tr class="slds-text-heading--label">
-		{{#columns}}
-		<th scope="col" title="{{.}}">
-			<div class="slds-truncate">{{.}}</div>
+		<th style="width: 5.5em" scope="col" title="Action">
+			<div class="slds-truncate">Action</div>
 		</th>
+		{{#columns}}
+			<th scope="col" title="{{label}}">
+				<div class="slds-truncate">{{label}}</div>
+			</th>
 		{{/columns}}
 	</tr>
 </thead>
