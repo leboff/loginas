@@ -1,7 +1,7 @@
 {
   "name": "Loginas - Login as your Salesforce Users",
   "short_name": "Loginas",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "manifest_version": 2,
   "description": "Login as and add Debug Logs to your Salesforce users with an easy searchable interface removing the need to navigate the setup menu.",
   "homepage_url": "http://www.bryanleboff.com",
