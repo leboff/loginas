@@ -15,7 +15,7 @@ function getSessionId(instance) {
         name: "sid",
         domain: "salesforce.com"
     }, function(cookies) {
-        var cookie = _.find(cookies, function(c){
+        var cookie = _.find(cookies.reverse(), function(c){
           return c.domain.indexOf(instance+'.') != -1;
         });
         if (cookie) {
@@ -51,7 +51,7 @@ function getSelect(selectFields){
 }
 
 function getWhere(selectFields, query){
-  
+
   var where = _.map(_.without(selectFields, 'Id'), function(field){
     return field +" like '%"+query+"%' ";
   });
@@ -67,19 +67,19 @@ function getUsers(name){
     });
 
     var selectFields = _.union(fieldNames, ['Id', 'Name', 'FirstName', 'LastName']);
-  
+
     conn.query("select  " + selectFields.join(',') +
-                "  from User where isactive = true and (" + getWhere(selectFields, query) + 
-                ") order by LastName limit 100", 
+                "  from User where isactive = true and (" + getWhere(selectFields, query) +
+                ") order by LastName limit 100",
       function(err, results){
         if(err) return deferred.reject(err);
         users = results.records;
         deferred.resolve(results.records);
     });
   })
-  
-  
-  
+
+
+
   return deferred;
 }
 
@@ -101,7 +101,7 @@ function getDebugLevels(){
   }
   return deferred;
 }
-/** 
+/**
  * Get the instance url (same as forcetk)
  */
 function getInstance(hostname) {
@@ -110,13 +110,13 @@ function getInstance(hostname) {
     if(elements[0] === 'c'){
       return elements[1];
     }
-    
+
     if(elements[0].indexOf('--c')!=-1){
       return elements[0].substring(0, elements[0].indexOf('--c'));
     }
 
     return elements[0];
-    
+
 }
 
 /**
@@ -209,9 +209,9 @@ function loginAsUser(id){
   //get the org id for logging in
   getOrgId().done(function(newOrgId){
     log.debug('Loginas', 'Retrieved org id '+newOrgId);
-    openURL(instanceUrl +  
+    openURL(instanceUrl +
       '/servlet/servlet.su?oid='+orgId+
-      '&suorgadminid='+id + 
+      '&suorgadminid='+id +
       '&retURL=%2Fhome%2Fhome.jsp'+
       '&targetURL=%2Fhome%2Fhome.jsp').then(deferred.resolve);
   }).fail(function(error){
@@ -221,7 +221,7 @@ function loginAsUser(id){
   });
 
   return deferred;
-  
+
 }
 
 
@@ -244,7 +244,7 @@ function debugUser(id, debugLevelId){
     DebugLevelId: debugLevelId,
     ExpirationDate: end.toISOString(),
     LogType: 'USER_DEBUG',
-    StartDate: start.toISOString(), 
+    StartDate: start.toISOString(),
     TracedEntityId: id
   }, function(err, result){
     if(err) {
