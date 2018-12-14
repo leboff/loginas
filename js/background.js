@@ -69,8 +69,10 @@ function getUsers(name){
     var selectFields = _.union(fieldNames, ['Id', 'Name', 'FirstName', 'LastName']);
 
     conn.query("select  " + selectFields.join(',') +
-                "  from User where isactive = true and (" + getWhere(selectFields, query) +
-                ") order by LastName limit 100",
+                "  from User where isactive = true  "+
+                (options.standardUsersOnly ?  " and UserType = 'Standard' " : "") +
+                " and (" + getWhere(selectFields, query) + ") "+
+                "  order by LastName limit 100",
       function(err, results){
         if(err) return deferred.reject(err);
         users = results.records;

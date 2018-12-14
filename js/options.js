@@ -22,12 +22,10 @@ var userFields = [
 
 ];
 
-var saveOptions = function(selectedItems){
+var saveOptions = function(options){
 	var deferred = new $.Deferred();
 	
-	chrome.storage.sync.set({
-		userFields: selectedItems
-	}, deferred.resolve);
+	chrome.storage.sync.set(options, deferred.resolve);
 
 	return deferred;
 }
@@ -44,7 +42,8 @@ var restoreOptions = function(){
 				id: 'UserRole-Name',
 				label: 'Role'
 			}
-		]
+		],
+		standardUsersOnly: true
 	},deferred.resolve);
 
 	return deferred;
